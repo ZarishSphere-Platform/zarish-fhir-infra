@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terminology-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: terminology-server
+  template:
+    metadata:
+      labels:
+        app: terminology-server
+    spec:
+      containers:
+      - name: terminology-server
+        image: zarish-terminology-server:latest
+        imagePullPolicy: Never # For local testing
+        ports:
+        - containerPort: 8081
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          value: "postgres"
+        - name: DB_NAME
+          value: "terminology_db"
+        - name: DATA_DIR
+          value: "/app/data"
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+      volumes:
+      - name: data-volume
+        hostPath:
+          path: /home/ariful/Desktop/ZarishSphere-Platform/zarish-fhir-data
+          type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: terminology-server
+spec:
+  selector:
+    app: terminology-server
+  ports:
+  - protocol: TCP
+    port: 8081
+    targetPort: 8081

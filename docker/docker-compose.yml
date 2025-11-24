@@ -36,6 +36,18 @@ services:
     networks:
       - zarish-net
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    container_name: zarish_keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    command: start-dev
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    networks:
+      - zarish-net
+
 networks:
   zarish-net:
     driver: bridge

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-shell
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-shell
+  template:
+    metadata:
+      labels:
+        app: frontend-shell
+    spec:
+      containers:
+      - name: frontend-shell
+        image: zarish-frontend-shell:latest
+        imagePullPolicy: Never # For local testing
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-shell
+spec:
+  selector:
+    app: frontend-shell
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zarish-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /fhir
+        pathType: Prefix
+        backend:
+          service:
+            name: fhir-server
+            port:
+              number: 8080
+      - path: /terminology
+        pathType: Prefix
+        backend:
+          service:
+            name: terminology-server
+            port:
+              number: 8081
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-shell
+            port:
+              number: 80
