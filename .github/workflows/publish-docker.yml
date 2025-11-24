@@ -1,0 +1,63 @@
+name: Publish Docker Images
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: zarishsphere-platform
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service:
+          - name: fhir-server
+            context: ../zarish-fhir-server
+            dockerfile: ../zarish-fhir-server/Dockerfile
+          - name: terminology-server
+            context: ../zarish-terminology-server
+            dockerfile: ../zarish-terminology-server/Dockerfile
+          - name: frontend-shell
+            context: ../zarish-frontend-shell
+            dockerfile: ../zarish-frontend-shell/Dockerfile
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: ZarishSphere-Platform/${{ matrix.service.name }}
+          path: ${{ matrix.service.name }}
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.name }}
+          file: ${{ matrix.service.name }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
